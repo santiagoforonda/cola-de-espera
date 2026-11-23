@@ -1,5 +1,5 @@
 import { Server } from "http";
-import {WebSocketServer} from "ws"
+import {WebSocket, WebSocketServer} from "ws"
 
 interface Options{
     server:Server;
@@ -29,6 +29,14 @@ export class WssService{
 
     static initWss(options:Options){
         WssService._instance=new WssService(options);
+    }
+
+    public sendMessage(type:String,payload:Object){
+        this.wss.clients.forEach(client=>{
+            if(client.readyState === WebSocket.OPEN){
+                client.send(JSON.stringify({type,payload}))
+            }
+        })
     }
 
     public start(){
