@@ -11,7 +11,7 @@ export class TicketService{
 
     }
 
-    private readonly _tickets:Ticket[] =[
+    private _tickets:Ticket[] =[
         {id:UuidAdapter.v4(),number:1,createdAt:new Date(),done:false}
     ];
 
@@ -27,7 +27,7 @@ export class TicketService{
     }
 
     public get lastWorkingOnTickets():Ticket[]{
-        return this.workingOnTickets.splice(0,4);
+        return this.workingOnTickets.slice(0,4);
     }
 
     public get lastTicketNumber(){
@@ -60,7 +60,8 @@ export class TicketService{
         ticket.handleAt = new Date();
 
         this.workingOnTickets.unshift({...ticket});
-
+        this.onTicketNumberChanged();
+        this.workingOnChange();
         return {
             status:"ok",ticket
         }
@@ -71,7 +72,7 @@ export class TicketService{
         const ticket = this._tickets.find(t=>t.id ===id);
         if(!ticket) return {status:"error",message:"Ticket no encontrado"};
 
-        this._tickets.map(ticket=>{
+        this._tickets = this._tickets.map(ticket=>{
             if(ticket.id ===id){
                 ticket.done=true;
             }
@@ -84,6 +85,10 @@ export class TicketService{
 
     private onTicketNumberChanged(){
         this.wssService.sendMessage("on-ticket-count-changed",this.pendintTickets.length);
+    }
+
+    private workingOnChange(){
+        this.wssService.sendMessage("working-on-change",this.lastWorkingOnTickets);
     }
     
 }
